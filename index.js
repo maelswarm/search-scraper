@@ -89,12 +89,12 @@ request(googleOptions, (error, response, html) => {
         .text()
         .indexOf('www') > -1
     ) {
-      results[i] = `https://${$(this).text()}`;
+      results[i] = `http://${$(this).text()}`;
     } else {
-      results[i] = `https://${$(this)
+      results[i] = `http://${$(this)
         .text()
         .replace(/\s+/g, '')
-        .toLocaleLowerCase()}.com/`;
+        .toLowerCase()}.com/`;
     }
   });
 

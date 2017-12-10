@@ -91,7 +91,10 @@ request(googleOptions, (error, response, html) => {
     ) {
       results[i] = `https://${$(this).text()}`;
     } else {
-      results[i] = 'https://google.com/';
+      results[i] = `https://${$(this)
+        .text()
+        .replace(/\s+/g, '')
+        .toLocaleLowerCase()}.com/`;
     }
   });
 

@@ -108,7 +108,6 @@ request(googleOptions, (error, response, html) => {
     } else {
       results[i] = `http://${$(this)
         .text()
-        .replace(/\s+/g, '')
         .toLowerCase()}/`;
     }
   });

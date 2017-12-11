@@ -86,9 +86,8 @@ const pageSpeedAPI = (url) => {
       const json = await JSON.parse(html);
       // console.log(json);
 
-      const ps = `PAGE SPEED:
+      const ps = `PAGE SPEED for ${json.id}:
       \nTitle: ${json.title}
-      \nURL: ${json.id}
       \nSpeed: ${json.ruleGroups.SPEED.score}
       \nUsability: ${json.ruleGroups.USABILITY.score}
       \n
@@ -106,14 +105,12 @@ const getMetadata = (url) => {
     }
 
     if (!error) {
-      const $ = await cheerio.load(html);
+      const $ = cheerio.load(html);
 
-      const meta =
-        `METADATA:
-          \n${url}
-          \nTitle: ${$('meta[name="title"]').attr('content')}
-          \nKeywords: ${$('meta[name="keywords"]').attr('content')}
-          \nDescription: ${$('meta[name="description"]').attr('content')}
+      const meta = `METADATA for ${url}:
+          \nTitle: ${$('meta[name="title"]').attr('content') ? $('meta[name="title"]').attr('content') : 'none'}
+          \nKeywords: ${$('meta[name="keywords"]').attr('content') ? $('meta[name="keywords"]').attr('content') : 'none'}
+          \nDescription: ${$('meta[name="keywords"]').attr('content') ? $('meta[name="description"]').attr('content') : 'none'}
           \n`
 
       // {
@@ -121,8 +118,6 @@ const getMetadata = (url) => {
       //   keywords: $('meta[name="keywords"]').attr('content'),
       //   description: $('meta[name="description"]').attr('content')
       // }
-
-      // return meta;
 
       console.log(meta);
     }

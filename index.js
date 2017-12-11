@@ -106,7 +106,7 @@ const getMetadata = (url) => {
     }
 
     if (!error) {
-      const $ = cheerio.load(html);
+      const $ = await cheerio.load(html);
 
       const meta =
         `METADATA:
@@ -122,7 +122,7 @@ const getMetadata = (url) => {
       //   description: $('meta[name="description"]').attr('content')
       // }
 
-      return meta;
+      // return meta;
 
       console.log(meta);
     }

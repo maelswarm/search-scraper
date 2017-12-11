@@ -12,7 +12,7 @@ if (argv.t) {
   options.url += '&types=' + argv.t;
 }
 
-request(options, async function (error, response, html) {
+request(options, async(error, response, html) => {
   if (!error) {
     const $ = await cheerio.load(html);
     // console.log(html);
@@ -35,7 +35,7 @@ const getWikipedia = (url) => {
     url: `https://en.wikipedia.org/wiki/${url}`
   };
 
-  request(wikiSearch, async function (error, response, html) {
+  request(wikiSearch, async(error, response, html) => {
     const $ = await cheerio.load(html);
 
     const wiki = $('.mw-parser-output p').eq(0).text();
@@ -58,7 +58,7 @@ const getPageSpeed = (url) => {
       }&key=AIzaSyAaBLhs1pKLTQyGD8CT0N4CSeqM2q-6G7s&strategy=mobile`
   };
 
-  request(PS_API, async function (error, response, html) {
+  request(PS_API, async(error, response, html) => {
     if (error) {
       console.log(error);
     }
@@ -79,12 +79,12 @@ const getPageSpeed = (url) => {
 }
 
 const getMetadata = (url) => {
-  request(url, async function (error, response, html) {
+  request(url, async(error, response, html) => {
     if (error) {
       console.log(error);
     }
 
-    const $ = cheerio.load(html);
+    const $ = await cheerio.load(html);
 
     const meta = `METADATA for ${url}:
           \nTitle: ${$('meta[name="title"]').attr('content') ? $('meta[name="title"]').attr('content') : 'none'}
@@ -96,8 +96,8 @@ const getMetadata = (url) => {
   });
 }
 
-request(googleSearch, (error, response, html) => {
-  const $ = cheerio.load(html);
+request(googleSearch, async(error, response, html) => {
+  const $ = await cheerio.load(html);
   //   console.log($('#ires'));
   //   console.log($('#rso'));
 

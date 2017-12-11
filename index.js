@@ -71,7 +71,6 @@ const getPageSpeed = (query) => {
       `
 
     console.log(ps);
-
   });
 }
 
@@ -91,6 +90,7 @@ const getMetadata = (query) => {
 
     console.log(meta);
   });
+
 }
 
 const getSearchData = (query) => {

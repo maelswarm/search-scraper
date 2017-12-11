@@ -8,13 +8,7 @@ const options = {
     '&key=AIzaSyAaBLhs1pKLTQyGD8CT0N4CSeqM2q-6G7s&limit=1&indent=True'
 };
 
-const psoptions = {
-  url: 'https://www.googleapis.com/pagespeedonline/v2/runPagespeed?url=' +
-    argv._[0] +
-    '&strategy=mobile&key=AIzaSyAaBLhs1pKLTQyGD8CT0N4CSeqM2q-6G7s'
-};
-
-const googleOptions = {
+const googleSearch = {
   url: `https://www.google.com/search?q=${argv._[0]}`
 };
 
@@ -29,38 +23,21 @@ if (argv.t) {
 request(options, function (error, response, html) {
   if (!error) {
     const $ = cheerio.load(html);
-    console.log(html);
+    // console.log(html);
     if (JSON.parse(html).itemListElement[0] !== undefined) {
-      if (
-        JSON.parse(html).itemListElement[0].result.detailedDescription
-        .articleBody !== undefined
-      ) {
-        console.log(
-          '\n' +
-          JSON.parse(html).itemListElement[0].result.detailedDescription
-          .articleBody +
-          '\n'
-        );
-      }
+
+      const knowledgeGraph = `Knowledge Graph for '${argv._[0]}':
+          \nName: ${JSON.parse(html).itemListElement[0].result.name}
+          \nURL: ${JSON.parse(html).itemListElement[0].result.url}
+          \nDescription: ${JSON.parse(html).itemListElement[0].result.detailedDescription ? JSON.parse(html).itemListElement[0].result.detailedDescription.articleBody : JSON.parse(html).itemListElement[0].result.description}
+          \nResult Score: ${JSON.parse(html).itemListElement[0].resultScore}
+          \n
+          `;
+
+      console.log(knowledgeGraph);
     }
   }
 });
-
-if (argv._[0].indexOf('http://') > -1 || argv._[0].indexOf('https://') > -1) {
-  request(psoptions, function (error, response, html) {
-    if (!error) {
-      //console.log(html);
-      const json = JSON.parse(html);
-      console.log(
-        '\nSpeed: ' +
-        json.ruleGroups.SPEED.score +
-        '/100\nUsability:' +
-        json.ruleGroups.USABILITY.score +
-        '/100\n'
-      );
-    }
-  });
-}
 
 request(wikioptions, function (error, response, html) {
   const $ = cheerio.load(html);
@@ -71,7 +48,7 @@ request(wikioptions, function (error, response, html) {
   );
 });
 
-const pageSpeedAPI = (url) => {
+const getPageSpeed = (url) => {
   const PS_API = {
     url: `https://www.googleapis.com/pagespeedonline/v2/runPagespeed?url=${
         url
@@ -82,19 +59,19 @@ const pageSpeedAPI = (url) => {
     if (error) {
       console.log(error);
     }
-    if (!error) {
-      const json = await JSON.parse(html);
-      // console.log(json);
 
-      const ps = `PAGE SPEED for ${json.id}:
+    const json = await JSON.parse(html);
+    // console.log(json);
+
+    const ps = `PAGE SPEED for ${json.id}:
       \nTitle: ${json.title}
       \nSpeed: ${json.ruleGroups.SPEED.score}
       \nUsability: ${json.ruleGroups.USABILITY.score}
       \n
       `
 
-      console.log(ps);
-    }
+    console.log(ps);
+
   });
 }
 
@@ -104,27 +81,19 @@ const getMetadata = (url) => {
       console.log(error);
     }
 
-    if (!error) {
-      const $ = cheerio.load(html);
+    const $ = cheerio.load(html);
 
-      const meta = `METADATA for ${url}:
+    const meta = `METADATA for ${url}:
           \nTitle: ${$('meta[name="title"]').attr('content') ? $('meta[name="title"]').attr('content') : 'none'}
           \nKeywords: ${$('meta[name="keywords"]').attr('content') ? $('meta[name="keywords"]').attr('content') : 'none'}
           \nDescription: ${$('meta[name="keywords"]').attr('content') ? $('meta[name="description"]').attr('content') : 'none'}
           \n`
 
-      // {
-      //   title: $('meta[name="title"]').attr('content'),
-      //   keywords: $('meta[name="keywords"]').attr('content'),
-      //   description: $('meta[name="description"]').attr('content')
-      // }
-
-      console.log(meta);
-    }
+    console.log(meta);
   });
 }
 
-request(googleOptions, (error, response, html) => {
+request(googleSearch, (error, response, html) => {
   const $ = cheerio.load(html);
   //   console.log($('#ires'));
   //   console.log($('#rso'));
@@ -150,7 +119,7 @@ request(googleOptions, (error, response, html) => {
   console.log('Google Search Rankings:\n', results);
 
   for (let result of results) {
-    pageSpeedAPI(result);
+    getPageSpeed(result);
 
     getMetadata(result);
   }

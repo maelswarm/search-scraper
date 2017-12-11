@@ -33,20 +33,20 @@ const getKnowledgeGraph = (query) => {
 }
 
 const getWikipedia = (query) => {
-  const wikiSearch = {
+  const wikipediaSearch = {
     url: `https://en.wikipedia.org/wiki/${query}`
   };
 
-  request(wikiSearch, async(error, response, html) => {
+  request(wikipediaSearch, async(error, response, html) => {
     if (error) {
       console.log(error);
     }
 
     const $ = await cheerio.load(html);
 
-    const wiki = $('.mw-parser-output p').eq(0).text();
+    const wikipediaDescription = $('.mw-parser-output p').eq(0).text();
 
-    console.log(`From Wikipedia: ${wiki}\n`);
+    console.log(`From Wikipedia: ${wikipediaDescription}\n`);
   });
 }
 
@@ -93,7 +93,7 @@ const getMetadata = (query) => {
   });
 }
 
-const getSearchRankings = (query) => {
+const getSearchData = (query) => {
   const googleSearch = {
     url: `https://www.google.com/search?q=${query}`
   };
@@ -138,4 +138,4 @@ const getSearchRankings = (query) => {
 
 getKnowledgeGraph(argv._[0]);
 getWikipedia(argv._[0]);
-getSearchRankings(argv._[0]);
+getSearchData(argv._[0]);

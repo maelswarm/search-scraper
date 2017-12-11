@@ -2,6 +2,49 @@ const request = require('request');
 const cheerio = require('cheerio');
 const argv = require('minimist')(process.argv.slice(2), {});
 
+const getPageSpeed = (query) => {
+  const PS_API = {
+    url: `https://www.googleapis.com/pagespeedonline/v2/runPagespeed?url=${query}&key=AIzaSyAaBLhs1pKLTQyGD8CT0N4CSeqM2q-6G7s&strategy=mobile`
+  };
+
+  request(PS_API, async(error, response, html) => {
+    if (error) {
+      console.log(error);
+    }
+
+    const json = await JSON.parse(html);
+    // console.log(json);
+
+    const ps = `PAGE SPEED for ${json.id}:
+      \nTitle: ${json.title}
+      \nSpeed: ${json.ruleGroups.SPEED.score}
+      \nUsability: ${json.ruleGroups.USABILITY.score}
+      \n
+      `
+
+    console.log(ps);
+  });
+}
+
+const getMetadata = (query) => {
+  request(query, async(error, response, html) => {
+    if (error) {
+      console.log(error);
+    }
+
+    const $ = await cheerio.load(html);
+
+    const meta = `METADATA for ${query}:
+          \nTitle: ${$('meta[name="title"]').attr('content') ? $('meta[name="title"]').attr('content') : 'none'}
+          \nKeywords: ${$('meta[name="keywords"]').attr('content') ? $('meta[name="keywords"]').attr('content') : 'none'}
+          \nDescription: ${$('meta[name="description"]').attr('content') ? $('meta[name="description"]').attr('content') : 'none'}
+          \n`
+
+    console.log(meta);
+  });
+
+}
+
 const getKnowledgeGraph = (query) => {
   const graphSearch = {
     url: `https://kgsearch.googleapis.com/v1/entities:search?query=${query}&key=AIzaSyAaBLhs1pKLTQyGD8CT0N4CSeqM2q-6G7s&limit=1&indent=True`
@@ -46,51 +89,12 @@ const getWikipedia = (query) => {
 
     const wikipediaDescription = $('.mw-parser-output p').eq(0).text();
 
-    console.log(`From Wikipedia: ${wikipediaDescription}\n`);
+    const wiki = `FROM WIKIPEDIA:
+    \n${wikipediaDescription}
+    \n`;
+
+    console.log(wiki);
   });
-}
-
-const getPageSpeed = (query) => {
-  const PS_API = {
-    url: `https://www.googleapis.com/pagespeedonline/v2/runPagespeed?url=${query}&key=AIzaSyAaBLhs1pKLTQyGD8CT0N4CSeqM2q-6G7s&strategy=mobile`
-  };
-
-  request(PS_API, async(error, response, html) => {
-    if (error) {
-      console.log(error);
-    }
-
-    const json = await JSON.parse(html);
-    // console.log(json);
-
-    const ps = `PAGE SPEED for ${json.id}:
-      \nTitle: ${json.title}
-      \nSpeed: ${json.ruleGroups.SPEED.score}
-      \nUsability: ${json.ruleGroups.USABILITY.score}
-      \n
-      `
-
-    console.log(ps);
-  });
-}
-
-const getMetadata = (query) => {
-  request(query, async(error, response, html) => {
-    if (error) {
-      console.log(error);
-    }
-
-    const $ = await cheerio.load(html);
-
-    const meta = `METADATA for ${query}:
-          \nTitle: ${$('meta[name="title"]').attr('content') ? $('meta[name="title"]').attr('content') : 'none'}
-          \nKeywords: ${$('meta[name="keywords"]').attr('content') ? $('meta[name="keywords"]').attr('content') : 'none'}
-          \nDescription: ${$('meta[name="description"]').attr('content') ? $('meta[name="description"]').attr('content') : 'none'}
-          \n`
-
-    console.log(meta);
-  });
-
 }
 
 const getSearchData = (query) => {
@@ -125,7 +129,7 @@ const getSearchData = (query) => {
     });
 
     results.join(' ');
-    console.log('Google Search Rankings:\n', results);
+    console.log('Google Search Rankings:\n', results, '\n');
 
     for (let result of results) {
       getPageSpeed(result);

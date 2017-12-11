@@ -86,7 +86,7 @@ const getMetadata = (query) => {
     const meta = `METADATA for ${query}:
           \nTitle: ${$('meta[name="title"]').attr('content') ? $('meta[name="title"]').attr('content') : 'none'}
           \nKeywords: ${$('meta[name="keywords"]').attr('content') ? $('meta[name="keywords"]').attr('content') : 'none'}
-          \nDescription: ${$('meta[name="keywords"]').attr('content') ? $('meta[name="description"]').attr('content') : 'none'}
+          \nDescription: ${$('meta[name="description"]').attr('content') ? $('meta[name="description"]').attr('content') : 'none'}
           \n`
 
     console.log(meta);
@@ -129,7 +129,6 @@ const getSearchData = (query) => {
 
     for (let result of results) {
       getPageSpeed(result);
-
       getMetadata(result);
     }
 

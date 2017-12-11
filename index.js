@@ -8,24 +8,15 @@ const options = {
     '&key=AIzaSyAaBLhs1pKLTQyGD8CT0N4CSeqM2q-6G7s&limit=1&indent=True'
 };
 
-const googleSearch = {
-  url: `https://www.google.com/search?q=${argv._[0]}`
-};
-
-const wikioptions = {
-  url: `https://en.wikipedia.org/wiki/${argv._[0]}`
-};
-
 if (argv.t) {
   options.url += '&types=' + argv.t;
 }
 
-request(options, function (error, response, html) {
+request(options, async function (error, response, html) {
   if (!error) {
-    const $ = cheerio.load(html);
+    const $ = await cheerio.load(html);
     // console.log(html);
     if (JSON.parse(html).itemListElement[0] !== undefined) {
-
       const knowledgeGraph = `Knowledge Graph for '${argv._[0]}':
           \nName: ${JSON.parse(html).itemListElement[0].result.name}
           \nURL: ${JSON.parse(html).itemListElement[0].result.url}
@@ -39,14 +30,26 @@ request(options, function (error, response, html) {
   }
 });
 
-request(wikioptions, function (error, response, html) {
-  const $ = cheerio.load(html);
-  console.log(
-    $('.mw-parser-output p')
-    .eq(0)
-    .text()
-  );
-});
+const getWikipedia = (url) => {
+  const wikiSearch = {
+    url: `https://en.wikipedia.org/wiki/${url}`
+  };
+
+  request(wikiSearch, async function (error, response, html) {
+    const $ = await cheerio.load(html);
+
+    const wiki = $('.mw-parser-output p').eq(0).text();
+
+    console.log(`From Wikipedia: ${wiki}`);
+  });
+}
+
+getWikipedia(argv._[0]);
+
+const googleSearch = {
+  url: `https://www.google.com/search?q=${argv._[0]}`
+};
+
 
 const getPageSpeed = (url) => {
   const PS_API = {

@@ -2,18 +2,20 @@ const request = require('request');
 const cheerio = require('cheerio');
 const argv = require('minimist')(process.argv.slice(2), {});
 
-const options = {
-  url: 'https://kgsearch.googleapis.com/v1/entities:search?query=' +
-    argv._[0] +
-    '&key=AIzaSyAaBLhs1pKLTQyGD8CT0N4CSeqM2q-6G7s&limit=1&indent=True'
-};
+const getKnowledgeGraph = (query) => {
+  const graphSearch = {
+    url: `https://kgsearch.googleapis.com/v1/entities:search?query=${query}&key=AIzaSyAaBLhs1pKLTQyGD8CT0N4CSeqM2q-6G7s&limit=1&indent=True`
+  };
 
-if (argv.t) {
-  options.url += '&types=' + argv.t;
-}
+  if (argv.t) {
+    graphSearch.url += '&types=' + argv.t;
+  }
 
-request(options, async(error, response, html) => {
-  if (!error) {
+  request(graphSearch, async(error, response, html) => {
+    if (error) {
+      console.log(error);
+    }
+
     const $ = await cheerio.load(html);
     // console.log(html);
     if (JSON.parse(html).itemListElement[0] !== undefined) {
@@ -27,35 +29,30 @@ request(options, async(error, response, html) => {
 
       console.log(knowledgeGraph);
     }
-  }
-});
+  });
+}
 
-const getWikipedia = (url) => {
+const getWikipedia = (query) => {
   const wikiSearch = {
-    url: `https://en.wikipedia.org/wiki/${url}`
+    url: `https://en.wikipedia.org/wiki/${query}`
   };
 
   request(wikiSearch, async(error, response, html) => {
+    if (error) {
+      console.log(error);
+    }
+
     const $ = await cheerio.load(html);
 
     const wiki = $('.mw-parser-output p').eq(0).text();
 
-    console.log(`From Wikipedia: ${wiki}`);
+    console.log(`From Wikipedia: ${wiki}\n`);
   });
 }
 
-getWikipedia(argv._[0]);
-
-const googleSearch = {
-  url: `https://www.google.com/search?q=${argv._[0]}`
-};
-
-
-const getPageSpeed = (url) => {
+const getPageSpeed = (query) => {
   const PS_API = {
-    url: `https://www.googleapis.com/pagespeedonline/v2/runPagespeed?url=${
-        url
-      }&key=AIzaSyAaBLhs1pKLTQyGD8CT0N4CSeqM2q-6G7s&strategy=mobile`
+    url: `https://www.googleapis.com/pagespeedonline/v2/runPagespeed?url=${query}&key=AIzaSyAaBLhs1pKLTQyGD8CT0N4CSeqM2q-6G7s&strategy=mobile`
   };
 
   request(PS_API, async(error, response, html) => {
@@ -78,15 +75,15 @@ const getPageSpeed = (url) => {
   });
 }
 
-const getMetadata = (url) => {
-  request(url, async(error, response, html) => {
+const getMetadata = (query) => {
+  request(query, async(error, response, html) => {
     if (error) {
       console.log(error);
     }
 
     const $ = await cheerio.load(html);
 
-    const meta = `METADATA for ${url}:
+    const meta = `METADATA for ${query}:
           \nTitle: ${$('meta[name="title"]').attr('content') ? $('meta[name="title"]').attr('content') : 'none'}
           \nKeywords: ${$('meta[name="keywords"]').attr('content') ? $('meta[name="keywords"]').attr('content') : 'none'}
           \nDescription: ${$('meta[name="keywords"]').attr('content') ? $('meta[name="description"]').attr('content') : 'none'}
@@ -96,35 +93,49 @@ const getMetadata = (url) => {
   });
 }
 
-request(googleSearch, async(error, response, html) => {
-  const $ = await cheerio.load(html);
-  //   console.log($('#ires'));
-  //   console.log($('#rso'));
+const getSearchRankings = (query) => {
+  const googleSearch = {
+    url: `https://www.google.com/search?q=${query}`
+  };
 
-  let results = [];
-
-  $('.s cite').each(function (i, element) {
-    if (
-      $(this)
-      .text()
-      .indexOf('http://') > -1 ||
-      $(this)
-      .text()
-      .indexOf('https://') > -1
-    ) {
-      results[i] = $(this).text();
-    } else {
-      results[i] = `http://${$(this).text()}`;
+  request(googleSearch, async(error, response, html) => {
+    if (error) {
+      console.log(error);
     }
+
+    const $ = await cheerio.load(html);
+    //   console.log($('#ires'));
+    //   console.log($('#rso'));
+
+    let results = [];
+
+    $('.s cite').each(function (i, element) {
+      if (
+        $(this)
+        .text()
+        .indexOf('http://') > -1 ||
+        $(this)
+        .text()
+        .indexOf('https://') > -1
+      ) {
+        results[i] = $(this).text();
+      } else {
+        results[i] = `http://${$(this).text()}`;
+      }
+    });
+
+    results.join(' ');
+    console.log('Google Search Rankings:\n', results);
+
+    for (let result of results) {
+      getPageSpeed(result);
+
+      getMetadata(result);
+    }
+
   });
+}
 
-  results.join(' ');
-  console.log('Google Search Rankings:\n', results);
-
-  for (let result of results) {
-    getPageSpeed(result);
-
-    getMetadata(result);
-  }
-
-});
+getKnowledgeGraph(argv._[0]);
+getWikipedia(argv._[0]);
+getSearchRankings(argv._[0]);
